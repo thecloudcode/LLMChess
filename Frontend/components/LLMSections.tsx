@@ -6,7 +6,7 @@
         const models = ['GPT-3.5', 'Claude', 'Mistral', 'LLaMA', 'PaLM'];
         const [model1, setModel1] = useState(models[0]);
         const [model2, setModel2] = useState(models[1]);
-        const [conversation, setConversation] = useState<string[]>([]);
+        // const [conversation, setConversation] = useState<string[]>([]);
 
         // const handleExchange = () => {
         //     const response = `${model2}: "This is a response from ${model2}"`;
