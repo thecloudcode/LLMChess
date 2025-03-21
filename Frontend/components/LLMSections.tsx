@@ -8,11 +8,11 @@
         const [model2, setModel2] = useState(models[1]);
         const [conversation, setConversation] = useState<string[]>([]);
 
-        const handleExchange = () => {
-            const response = `${model2}: "This is a response from ${model2}"`;
-            setConversation((prev) => [...prev, `${model1}: "What do you think about AI?`, response]);
-            console.log(conversation);
-        };
+        // const handleExchange = () => {
+        //     const response = `${model2}: "This is a response from ${model2}"`;
+        //     setConversation((prev) => [...prev, `${model1}: "What do you think about AI?`, response]);
+        //     console.log(conversation);
+        // };
 
         return (
             <div className="h-full w-full bg-black text-white flex flex-col items-center p-4 rounded-xl">
