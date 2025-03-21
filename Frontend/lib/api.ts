@@ -1,4 +1,4 @@
-import { Agent, GameState, Conversation } from "./types";
+import { Agent } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_PYTHON_API_URL;
 

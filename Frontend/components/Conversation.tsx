@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {motion} from 'framer-motion';
-import LLMTerminal from "./LLMTerminal";
 
 const Conversation = () => {
     const models = ['GPT-3.5', 'Claude', 'Mistral', 'LLaMA', 'PaLM'];

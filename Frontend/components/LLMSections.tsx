@@ -1,5 +1,5 @@
     import { useState } from "react";
-    import {motion} from 'framer-motion';
+    // import {motion} from 'framer-motion';
     import LLMTerminal from "./LLMTerminal";
 
     const LLMChat = () => {
@@ -11,6 +11,7 @@
         const handleExchange = () => {
             const response = `${model2}: "This is a response from ${model2}"`;
             setConversation((prev) => [...prev, `${model1}: "What do you think about AI?`, response]);
+            console.log(conversation);
         };
 
         return (

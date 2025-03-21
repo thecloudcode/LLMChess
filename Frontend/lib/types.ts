@@ -1,9 +1,14 @@
+interface anyParameters {
+    key1: string;
+    key2: number;
+}
+
 export type Agent = {
     id: string;
     name: string;
     description: string;
     model: string;
-    parameters?: Record<string, any>;
+    parameters?: Record<string, anyParameters>;
 }
 
 export type ChessMove = {
