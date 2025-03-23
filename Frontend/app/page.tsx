@@ -1,11 +1,14 @@
-  import React from "react";
+"use client";
 
-  export default function Home(){
-    return (
-      <div className="flex flex-col items-center justify-center bg-[#888FA1] p-10 h-screen">
-      
-      <img src="/Board.png" alt="ChessLLM" className="h-full shadow-2xl" />
+import ChessGame from "@/components/Test";
+import React from "react";
 
-      </div>
-    )
-  }
+export default function Home(){
+  return (
+    <div className="flex flex-col items-center justify-center bg-[#888FA1] p-10 h-screen">
+    
+    <ChessGame/>
+
+    </div>
+  )
+}

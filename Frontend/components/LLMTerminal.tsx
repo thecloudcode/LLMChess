@@ -35,7 +35,7 @@ const LLMTerminal = () => {
       };
     
       return (
-        <div className="bg-black text-white text-xs p-4 rounded-lg w-full overflow-y-auto p-4">
+        <div className="bg-black text-white text-xs p-4 rounded-lg w-full overflow-y-auto">
         
           <div className="space-y-1">
             {messages.map((msg, index) => (
