@@ -1,4 +1,3 @@
-// components/ChessBattle.tsx
 import { useState, useEffect, useRef } from 'react';
 
 interface ChessEvent {
@@ -279,3 +278,4 @@ export default function ChessBattle() {
     </div>
   );
 }
+

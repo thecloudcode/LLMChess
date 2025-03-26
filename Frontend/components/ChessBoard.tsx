@@ -66,7 +66,7 @@ const ChessBoard: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center bg-[#13141E] py-4 px-10 h-screen">
+    <div className="flex flex-col items-center justify-center bg-white py-4 px-10 h-screen">
       <div className="w-full max-w-[90vmin] flex justify-between items-center px-4">
         <div className="text-white">
           <div className="text-lg font-bold">{playerScore}</div>
