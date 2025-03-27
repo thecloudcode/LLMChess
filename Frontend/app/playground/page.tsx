@@ -27,7 +27,7 @@ export default function Home() {
         <LLMChat 
           sharedEvents={sharedEvents} 
           onAddEvent={handleAddEvent}
-          onResetEvents={handleResetEvents}
+          // onResetEvents={handleResetEvents}
         />
       </div>
       <div className="flex-[1.2] min-w-0 h-full justify-center items-center">
