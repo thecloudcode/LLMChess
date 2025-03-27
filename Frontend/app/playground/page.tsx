@@ -6,7 +6,7 @@ import ChatArea from "../components/ChatArea";
 
 interface ChessEvent {
   type: string;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export default function Home() {

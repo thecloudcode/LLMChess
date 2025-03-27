@@ -4,13 +4,21 @@ import { Bricolage_Grotesque } from "next/font/google"
 
 interface ChessEvent {
   type: string;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 interface LLMChatProps {
   sharedEvents: ChessEvent[];
   onAddEvent: (event: ChessEvent) => void;
   onResetEvents: () => void;
+}
+
+interface GameData {
+  players?: string[];
+  player?: string;
+  move?: string;
+  message?: string;
+  result?: string;
 }
 
 const bricolageGrotesque = Bricolage_Grotesque({
@@ -106,7 +114,7 @@ const LLMChat: React.FC<LLMChatProps> = ({
       }
     };
 
-    const safeJsonParse = (data: string | undefined | null) => {
+    const safeJsonParse = (data: string | undefined | null): Record<string, unknown> => {
       if (!data) {
         console.warn('Empty data received from event');
         return { empty: true };
@@ -141,7 +149,7 @@ const LLMChat: React.FC<LLMChatProps> = ({
       }
     };
     
-    const getStatusMessage = (type: string, data: any): string => {
+    const getStatusMessage = (type: string, data: GameData): string => {
       switch (type) {
         case 'game-start':
           return `Game started: ${data.players?.join(' vs ') || 'Unknown players'}`;
@@ -162,8 +170,14 @@ const LLMChat: React.FC<LLMChatProps> = ({
       }
     };
     
-    // Rest of the setup remains the same
-    // ... (other event handlers and registration)
+    // Register event handlers
+    eventSource.addEventListener('game-start', (e: MessageEvent) => handleEvent('game-start', e));
+    eventSource.addEventListener('thinking', (e: MessageEvent) => handleEvent('thinking', e));
+    eventSource.addEventListener('response', (e: MessageEvent) => handleEvent('response', e));
+    eventSource.addEventListener('move', (e: MessageEvent) => handleEvent('move', e));
+    eventSource.addEventListener('error', (e: MessageEvent) => handleEvent('error', e));
+    eventSource.addEventListener('illegal-move', (e: MessageEvent) => handleEvent('illegal-move', e));
+    eventSource.addEventListener('game-over', (e: MessageEvent) => handleEvent('game-over', e));
   };
   
   const closeEventSource = () => {
@@ -183,10 +197,8 @@ const LLMChat: React.FC<LLMChatProps> = ({
 
   return (
     <div className="h-full w-full text-white flex flex-col items-center rounded-xl space-y-3">
-            
-
       <div className="flex justify-center space-x-2 w-full">
-      <div className="w-6 h-6 bg-black rounded-full"></div>
+        <div className="w-6 h-6 bg-black rounded-full"></div>
         <select 
           value={model1}
           onChange={(e) => setModel1(e.target.value)}
@@ -206,7 +218,7 @@ const LLMChat: React.FC<LLMChatProps> = ({
       </div>
       
       <div className="flex w-full justify-center space-x-2">
-      <div className="w-6 h-6 border-2 border-black rounded-full bg-white"></div>
+        <div className="w-6 h-6 border-2 border-black rounded-full bg-white"></div>
         <select 
           value={model2}
           onChange={(e) => setModel2(e.target.value)}

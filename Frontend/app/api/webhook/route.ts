@@ -70,7 +70,7 @@ function extractMove(response: string) {
 }
 
 // Helper function to format SSE messages properly with careful error handling
-function formatSseEvent(eventType: string, data: any) {
+function formatSseEvent(eventType: string, data: Record<string, unknown> | string) {
   try {
     // Handle undefined/null data
     if (data === undefined || data === null) {
@@ -94,13 +94,10 @@ function formatSseEvent(eventType: string, data: any) {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   console.log("Chess webhook called with POST method");
   
   try {
-    const { readable, writable } = new TransformStream();
-    const writer = writable.getWriter();
-    
     // Generate a unique game ID - in a real app, this would be more sophisticated
     const gameId = Date.now().toString();
     
@@ -132,14 +129,14 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   console.log("Chess webhook called with GET method - establishing SSE connection");
   
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
   
   // Function to send events 
-  const sendEvent = async (event: string, data: any) => {
+  const sendEvent = async (event: string, data: Record<string, unknown> | string) => {
     try {
       const eventString = formatSseEvent(event, data);
       console.log(`Sending event: ${event} with data:`, data);
@@ -170,7 +167,7 @@ export async function GET(req: NextRequest) {
       let illegalMove = false;
       let gameOver = false;
       const moves: string[] = []; // Track moves
-      const responses: Record<string, string> = {}; // Track full responses
+      const responses: Record<number, string> = {}; // Track full responses
       
       // First make sure the SSE connection is working by sending a test message
       await sendEvent('connection-test', { message: 'SSE connection established' });

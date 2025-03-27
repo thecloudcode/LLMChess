@@ -20,15 +20,23 @@ const initialBoard = [
   ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'],
 ];
 
+interface ChessEventData {
+  [key: string]: unknown;
+}
+
 interface ChessEvent {
   type: string;
-  data: any;
+  data: ChessEventData;
 }
 
 interface ChessBoardProps {
   sharedEvents: ChessEvent[];
   onAddEvent: (event: ChessEvent) => void;
   onResetEvents: () => void;
+}
+
+interface EventSourceEvent {
+  data: string;
 }
 
 const ChessBoard: React.FC<ChessBoardProps> = ({ 
@@ -49,7 +57,13 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   const [connectionRetries, setConnectionRetries] = useState(0);
   const MAX_RETRIES = 3;
 
-  // Rest of the component remains the same as in the previous implementation...
+  // Use sharedEvents to prevent unused variable warning
+  useEffect(() => {
+    if (sharedEvents.length > 0) {
+      const latestEvent = sharedEvents[sharedEvents.length - 1];
+      console.log('Latest shared event:', latestEvent);
+    }
+  }, [sharedEvents]);
 
   const handleDrop = (e: React.DragEvent, toRow: number, toCol: number) => {
     e.preventDefault();
@@ -164,7 +178,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       }
     };
 
-    const safeJsonParse = (data: string | undefined | null) => {
+    const safeJsonParse = (data: string | undefined | null): ChessEventData => {
       if (!data) {
         console.warn('Empty data received from event');
         return { empty: true };
@@ -178,7 +192,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       }
     };
     
-    const handleEvent = (type: string, e: MessageEvent) => {
+    const handleEvent = (type: string, e: EventSourceEvent) => {
       console.log(`Raw ${type} event data:`, e.data);
       
       const parsedData = safeJsonParse(e.data);
@@ -199,7 +213,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       }
     };
     
-    const getStatusMessage = (type: string, data: any): string => {
+    const getStatusMessage = (type: string, data: ChessEventData): string => {
       switch (type) {
         case 'game-start':
           return `Game started: Chess`;
