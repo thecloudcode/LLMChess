@@ -1,16 +1,45 @@
 "use client";
-
-import React from "react";
+import React, { useState } from "react";
 import ChessBoard from "@/components/ChessBoard";
 import LLMChat from "@/components/LLMSections";
 import ChatArea from "../components/ChatArea";
 
-export default function Home(){
+interface ChessEvent {
+  type: string;
+  data: any;
+}
+
+export default function Home() {
+  const [sharedEvents, setSharedEvents] = useState<ChessEvent[]>([]);
+
+  const handleAddEvent = (event: ChessEvent) => {
+    setSharedEvents(prev => [...prev, event]);
+  };
+
+  const handleResetEvents = () => {
+    setSharedEvents([]);
+  };
+
   return (
-    <div className="h-screen flex gap-2 justify-center items-center bg-white p-4">
-      <LLMChat/>
-      <ChessBoard />
-      <ChatArea />
+    <div className="flex justify-center items-center bg-white py-5 px-2 md:px-5"
+         style={{ height: 'calc(100vh - 80px)' }}> {/* Adjust 60px to your navbar height */}
+      <div className="flex-[1] min-w-0 h-full">
+        <LLMChat 
+          sharedEvents={sharedEvents} 
+          onAddEvent={handleAddEvent}
+          onResetEvents={handleResetEvents}
+        />
+      </div>
+      <div className="flex-[1.2] min-w-0 h-full justify-center items-center">
+        <ChessBoard 
+          sharedEvents={sharedEvents} 
+          onAddEvent={handleAddEvent}
+          onResetEvents={handleResetEvents}
+        />
+      </div>
+      <div className="flex-[1] min-w-0 h-full">
+        <ChatArea />
+      </div>
     </div>
-  )
+  );
 }

@@ -21,16 +21,16 @@ const ChatArea: React.FC = () => {
   const getMessageClasses = (sender: Message['sender']) => {
     switch (sender) {
       case 'user':
-        return 'bg-blue-100 self-end';
+        return 'bg-[#EEF1F5] self-end text-black text-sm';
       case 'llama':
-        return 'bg-green-100 self-start';
+        return 'bg-[#2F3241] self-start text-white text-sm';
       case 'deepseek':
-        return 'bg-purple-100 self-start';
+        return 'bg-[#2F3241] self-start text-white text-sm';
     }
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       <div className="flex-grow overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div
@@ -45,7 +45,7 @@ const ChatArea: React.FC = () => {
               )}`}
             >
               <p>{message.content}</p>
-              <small className="block text-xs text-gray-500 mt-1">
+              <small className="block text-xs mt-2">
                 {message.sender} • {message.timestamp.toLocaleTimeString()}
               </small>
             </div>
