@@ -36,46 +36,47 @@ const LLMChat: React.FC<LLMChatProps> = ({
   const [model1, setModel1] = useState(models[0]);
   const [model2, setModel2] = useState(models[1]);
   const [status, setStatus] = useState<string>('Ready to start');
+  console.log(status)
   const [isGameRunning, setIsGameRunning] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const [connectionRetries, setConnectionRetries] = useState(0);
   const MAX_RETRIES = 3;
  
-  const startGame = async () => {
-    if (isGameRunning) return;
+  // const startGame = async () => {
+  //   if (isGameRunning) return;
     
-    setStatus('Starting game...');
-    onResetEvents(); // Reset shared events
-    setIsGameRunning(true);
-    setConnectionRetries(0);
+  //   setStatus('Starting game...');
+  //   onResetEvents(); // Reset shared events
+  //   setIsGameRunning(true);
+  //   setConnectionRetries(0);
     
-    try {
-      const response = await fetch('/api/webhook', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          model1, 
-          model2 
-        }),
-      });
+  //   try {
+  //     const response = await fetch('/api/webhook', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ 
+  //         model1, 
+  //         model2 
+  //       }),
+  //     });
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to start game: ${response.status} - ${errorText}`);
-      }
+  //     if (!response.ok) {
+  //       const errorText = await response.text();
+  //       throw new Error(`Failed to start game: ${response.status} - ${errorText}`);
+  //     }
       
-      await new Promise(resolve => setTimeout(resolve, 500));
+  //     await new Promise(resolve => setTimeout(resolve, 500));
       
-      setupEventSource();
+  //     setupEventSource();
       
-    } catch (error) {
-      console.error('Error starting game:', error);
-      setStatus(`Failed to start game: ${error instanceof Error ? error.message : String(error)}`);
-      setIsGameRunning(false);
-    }
-  };
+  //   } catch (error) {
+  //     console.error('Error starting game:', error);
+  //     setStatus(`Failed to start game: ${error instanceof Error ? error.message : String(error)}`);
+  //     setIsGameRunning(false);
+  //   }
+  // };
 
   const setupEventSource = () => {
     const eventSource = new EventSource('/api/webhook');

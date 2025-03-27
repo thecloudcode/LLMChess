@@ -95,7 +95,7 @@ function formatSseEvent(eventType: string, data: Record<string, unknown> | strin
 }
 
 export async function POST(_req: NextRequest) {
-  console.log("Chess webhook called with POST method");
+  console.log(`Chess webhook called with POST method ${_req}`);
   
   try {
     // Generate a unique game ID - in a real app, this would be more sophisticated
@@ -130,7 +130,7 @@ export async function POST(_req: NextRequest) {
 }
 
 export async function GET(_req: NextRequest) {
-  console.log("Chess webhook called with GET method - establishing SSE connection");
+  console.log(`Chess webhook called with GET method - establishing SSE connection, ${_req}`);
   
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();

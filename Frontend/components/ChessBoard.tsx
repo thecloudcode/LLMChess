@@ -52,6 +52,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
 
   // New state for game management
   const [status, setStatus] = useState<string>('Ready to start');
+  console.log(status);
   const [isGameRunning, setIsGameRunning] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const [connectionRetries, setConnectionRetries] = useState(0);
