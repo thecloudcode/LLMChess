@@ -9,6 +9,7 @@ interface ChessEvent {
 
 interface LLMChatProps {
   sharedEvents: ChessEvent[];
+  onAddEvent?: (event: ChessEvent) => void;
 }
 
 const bricolageGrotesque = Bricolage_Grotesque({
@@ -19,10 +20,12 @@ const bricolageGrotesque = Bricolage_Grotesque({
 
 const LLMChat: React.FC<LLMChatProps> = ({ 
   sharedEvents, 
+  onAddEvent
 }) => {
   const models = ['GPT-3.5', 'Llama1', 'Llama2', 'LLaMA', 'PaLM'];
   const [model1, setModel1] = useState(models[0]);
   const [model2, setModel2] = useState(models[1]);
+  console.log(onAddEvent);
 
   return (
     <div className="h-full w-full text-white flex flex-col items-center rounded-xl space-y-3">
