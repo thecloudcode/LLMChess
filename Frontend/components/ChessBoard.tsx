@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import ChessPiece from "./ChessPiece";
 import { movePiece } from "@/utils/chess";
 import { Bricolage_Grotesque } from "next/font/google"
@@ -100,7 +100,7 @@ const mapAlgebraicToCoords = (move: string, currentBoard: string[][]): { from: [
       // Find the piece that can move there
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
-          if (currentBoard[r][c] === piece.toUpperCase()) {
+          if (currentBoard[r][c] === piece.toUpperCase() || currentBoard[r][c] === piece.toLowerCase()) {
             // Simplified check - in a real implementation, you would verify if the move is legal
             return { from: [r, c], to: [toRow, toCol] };
           }
@@ -117,7 +117,7 @@ const mapAlgebraicToCoords = (move: string, currentBoard: string[][]): { from: [
       // Find the piece that can capture
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
-          if (currentBoard[r][c] === piece.toUpperCase()) {
+          if (currentBoard[r][c] === piece.toUpperCase() || currentBoard[r][c] === piece.toLowerCase()) {
             // Simplified check - in a real implementation, you would verify if the capture is legal
             return { from: [r, c], to: [toRow, toCol] };
           }
@@ -187,29 +187,48 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   const [connectionRetries, setConnectionRetries] = useState(0);
   const MAX_RETRIES = 3;
 
+  // Memoize the moveHistory state update function
+  const addMoveToHistory = useCallback((move: string) => {
+    setMoveHistory(prev => [...prev, move]);
+  }, []);
+
+  // Handle captured pieces
+  const handleCapture = useCallback((pieceBeingCaptured: string) => {
+    if (pieceBeingCaptured !== ' ') {
+      if (pieceBeingCaptured === pieceBeingCaptured.toLowerCase()) {
+        setCapturedByPlayer(prev => [...prev, pieceBeingCaptured]);
+        setPlayerScore(prev => prev + getPieceValue(pieceBeingCaptured));
+      } else {
+        setCapturedByOpponent(prev => [...prev, pieceBeingCaptured]);
+        setOpponentScore(prev => prev + getPieceValue(pieceBeingCaptured));
+      }
+    }
+  }, []);
+
   // Process shared events to update the board
   useEffect(() => {
-    if (sharedEvents.length > 0) {
-      const latestEvent = sharedEvents[sharedEvents.length - 1];
-      console.log('Processing latest shared event:', latestEvent);
+    if (sharedEvents.length === 0) return;
+    
+    const latestEvent = sharedEvents[sharedEvents.length - 1];
+    console.log('Processing latest shared event:', latestEvent);
+    
+    // Handle move events
+    if (latestEvent.type === 'move' && latestEvent.data.move) {
+      const moveNotation = latestEvent.data.move as string;
+      console.log(`Processing move: ${moveNotation}`);
       
-      // Handle move events
-      if (latestEvent.type === 'move' && latestEvent.data.move) {
-        const moveNotation = latestEvent.data.move as string;
-        console.log(`Processing move: ${moveNotation}`);
-        
-        // Add to move history
-        setMoveHistory(prev => [...prev, moveNotation]);
-        console.log(moveHistory)
-        
-        // Check if the FEN string is available
-        if (latestEvent.data.fen && typeof latestEvent.data.fen === 'string') {
-          console.log(`Using FEN to update board: ${latestEvent.data.fen}`);
-          const newBoardFromFen = parseFEN(latestEvent.data.fen as string);
-          setBoardState(newBoardFromFen);
-        } else {
-          // Fallback to algebraic notation
-          const coords = mapAlgebraicToCoords(moveNotation, boardState);
+      // Add to move history (using the memoized function)
+      addMoveToHistory(moveNotation);
+      
+      // Check if the FEN string is available
+      if (latestEvent.data.fen && typeof latestEvent.data.fen === 'string') {
+        console.log(`Using FEN to update board: ${latestEvent.data.fen}`);
+        const newBoardFromFen = parseFEN(latestEvent.data.fen as string);
+        setBoardState(newBoardFromFen);
+      } else {
+        // Fallback to algebraic notation
+        setBoardState(prevBoard => {
+          const coords = mapAlgebraicToCoords(moveNotation, prevBoard);
           
           if (coords) {
             console.log(`Mapped move ${moveNotation} to coordinates:`, coords);
@@ -217,46 +236,67 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
             const [toRow, toCol] = coords.to;
             
             // Check if a piece is being captured
-            const pieceBeingCaptured = boardState[toRow][toCol];
+            const pieceBeingCaptured = prevBoard[toRow][toCol];
+            
+            // Handle captures separately
+            if (pieceBeingCaptured !== ' ') {
+              handleCapture(pieceBeingCaptured);
+            }
             
             // Update the board
-            const newBoard = movePiece(boardState, fromRow, fromCol, toRow, toCol);
-            setBoardState(newBoard);
-            
-            // Handle captures
-            if (pieceBeingCaptured !== ' ') {
-              if (pieceBeingCaptured === pieceBeingCaptured.toLowerCase()) {
-                setCapturedByPlayer(prev => [...prev, pieceBeingCaptured]);
-                setPlayerScore(prev => prev + getPieceValue(pieceBeingCaptured));
-              } else {
-                setCapturedByOpponent(prev => [...prev, pieceBeingCaptured]);
-                setOpponentScore(prev => prev + getPieceValue(pieceBeingCaptured));
-              }
-            }
-          } else {
-            console.warn(`Could not map move ${moveNotation} to board coordinates`);
+            return movePiece(prevBoard, fromRow, fromCol, toRow, toCol);
           }
-        }
+          
+          console.warn(`Could not map move ${moveNotation} to board coordinates`);
+          return prevBoard;
+        });
       }
       
-      // Handle game-over event with final board state
-      if (latestEvent.type === 'game-over' && latestEvent.data.finalFen) {
-        console.log(`Setting final board from FEN: ${latestEvent.data.finalFen}`);
-        const finalBoard = parseFEN(latestEvent.data.finalFen as string);
-        setBoardState(finalBoard);
-      }
-      
-      // If the event is game-start, reset the board
-      if (latestEvent.type === 'game-start') {
-        setBoardState(initialBoard);
-        setCapturedByPlayer([]);
-        setCapturedByOpponent([]);
-        setPlayerScore("");
-        setOpponentScore("");
-        setMoveHistory([]);
+      // After move is processed, notify server that render is complete if moveNumber exists
+      const moveNumber = latestEvent.data.moveNumber;
+      if (moveNumber && typeof moveNumber === 'number') {
+        setTimeout(() => {
+          notifyRenderComplete(moveNumber as number);
+        }, 100); // Small delay to ensure state updates have processed
       }
     }
-  }, [sharedEvents, boardState]);
+    
+    // Handle game-over event with final board state
+    if (latestEvent.type === 'game-over' && latestEvent.data.finalFen) {
+      console.log(`Setting final board from FEN: ${latestEvent.data.finalFen}`);
+      const finalBoard = parseFEN(latestEvent.data.finalFen as string);
+      setBoardState(finalBoard);
+    }
+    
+    // If the event is game-start, reset the board
+    if (latestEvent.type === 'game-start') {
+      setBoardState(initialBoard);
+      setCapturedByPlayer([]);
+      setCapturedByOpponent([]);
+      setPlayerScore("");
+      setOpponentScore("");
+      setMoveHistory([]);
+    }
+  }, [sharedEvents, addMoveToHistory, handleCapture]);
+
+  // Function to notify server that render is complete
+  const notifyRenderComplete = async (moveCount: number) => {
+    try {
+      await fetch('/api/notify-render-complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          moveCount,
+          gameId: 'default'
+        }),
+      });
+      console.log(`Notified server that move #${moveCount} rendering is complete`);
+    } catch (error) {
+      console.error('Error notifying render complete:', error);
+    }
+  };
 
   const handleDrop = (e: React.DragEvent, toRow: number, toCol: number) => {
     e.preventDefault();
@@ -268,19 +308,11 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
 
     const pieceBeingCaptured = boardState[toRow][toCol];
 
-    const newBoard = movePiece(boardState, fromRow, fromCol, toRow, toCol);
+    setBoardState(prevBoard => movePiece(prevBoard, fromRow, fromCol, toRow, toCol));
 
     if (pieceBeingCaptured !== ' ') {
-      if (pieceBeingCaptured === pieceBeingCaptured.toLowerCase()) {
-        setCapturedByPlayer([...capturedByPlayer, pieceBeingCaptured]);
-        setPlayerScore(playerScore + getPieceValue(pieceBeingCaptured));
-      } else {
-        setCapturedByOpponent([...capturedByOpponent, pieceBeingCaptured]);
-        setOpponentScore(opponentScore + getPieceValue(pieceBeingCaptured));
-      }
+      handleCapture(pieceBeingCaptured);
     }
-
-    setBoardState(newBoard);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -289,13 +321,13 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
 
   const getPieceValue = (piece: string) => {
     switch (piece.toLowerCase()) {
-      case 'p': return 1; 
-      case 'n': return 3; 
-      case 'b': return 3; 
-      case 'r': return 5; 
-      case 'q': return 9; 
-      case 'k': return 0; 
-      default: return 0;
+      case 'p': return '1'; 
+      case 'n': return '3'; 
+      case 'b': return '3'; 
+      case 'r': return '5'; 
+      case 'q': return '9'; 
+      case 'k': return '0'; 
+      default: return '0';
     }
   };
 
@@ -338,12 +370,15 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     } catch (error) {
       console.error('Error starting game:', error);
       setStatus(`Failed to start game: ${error instanceof Error ? error.message : String(error)}`);
-      console.log(status)
       setIsGameRunning(false);
     }
   };
 
   const setupEventSource = () => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+    
     const eventSource = new EventSource('/api/webhook');
     eventSourceRef.current = eventSource;
     
@@ -475,24 +510,12 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
           <div className="text-lg font-bold">{playerScore}</div>
           <div className="flex">
             {capturedByPlayer.map((piece, index) => (
-              <div key={index} className="text-white text-2xl mx-1">
+              <div key={`player-capture-${index}`} className="text-white text-2xl mx-1">
                 {piece}
               </div>
             ))}
           </div>
         </div>
-        
-        {/* Move history display */}
-        {/* <div className="text-white bg-[#2F3241] p-2 rounded max-h-32 overflow-y-auto">
-          <h3 className="text-sm font-bold mb-1">Move History</h3>
-          <div className="text-xs">
-            {moveHistory.map((move, index) => (
-              <span key={index} className="mr-2">
-                {index % 2 === 0 ? `${Math.floor(index/2) + 1}.` : ''} {move}
-              </span>
-            ))}
-          </div>
-        </div> */}
       </div>
       
       <div className="grid grid-cols-8 grid-rows-8 w-full max-w-[84vmin] max-h-[84vmin] aspect-square shadow-2xl border-4 border-[#13141E]">
@@ -501,7 +524,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
             const isLightSquare = (rowIndex + colIndex) % 2 === 0;
             return (
               <div
-                key={`${rowIndex}-${colIndex}`}
+                key={`square-${rowIndex}-${colIndex}`}
                 className={`flex items-center justify-center 
                   ${isLightSquare ? "bg-[#2F3241]" : "bg-[#13141E]"} shadow-2xl`}
                 onDrop={(e)=>handleDrop(e, rowIndex, colIndex)}
@@ -509,7 +532,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
               >
                 {piece !== ' ' && (
                   <ChessPiece
-                    key={`${rowIndex}-${colIndex}-piece`}
+                    key={`piece-${rowIndex}-${colIndex}`}
                     piece={piece}
                     row={rowIndex}
                     col={colIndex}
@@ -526,17 +549,12 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
           <div className="text-lg font-bold">{opponentScore}</div>
           <div className="flex mt-2">
             {capturedByOpponent.map((piece, index) => (
-              <div key={index} className="text-white text-2xl mx-1">
+              <div key={`opponent-capture-${index}`} className="text-white text-2xl mx-1">
                 {piece}
               </div>
             ))}
           </div>
         </div>
-        
-        {/* Status display */}
-        {/* <div className="text-white bg-[#2F3241] p-2 rounded">
-          <p className="text-sm">{status}</p>
-        </div> */}
       </div>
       
       <button 
