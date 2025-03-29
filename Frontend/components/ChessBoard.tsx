@@ -179,6 +179,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   const [playerScore, setPlayerScore] = useState("");
   const [opponentScore, setOpponentScore] = useState("");
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
+  
 
   // New state for game management
   const [status, setStatus] = useState<string>('Ready to start');
@@ -219,6 +220,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       
       // Add to move history (using the memoized function)
       addMoveToHistory(moveNotation);
+      console.log(moveHistory)
       
       // Check if the FEN string is available
       if (latestEvent.data.fen && typeof latestEvent.data.fen === 'string') {
@@ -335,6 +337,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     if (isGameRunning) return;
     
     setStatus('Starting game...');
+    console.log(status)
     onResetEvents(); // Reset shared events
     setIsGameRunning(true);
     setConnectionRetries(0);
