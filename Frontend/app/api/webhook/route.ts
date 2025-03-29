@@ -7,8 +7,8 @@ const activeGames = new Map();
 
 async function getMoveFromLlama(moves: string[], playerName: string = 'Llama') {
   const prompt = moves.length > 0 
-    ? `You are ${playerName}. Given the chess moves so far: ${moves.join(', ')}, suggest the next chess move. Just response back with the move you want to play in order to win the chess game.` 
-    : `You are ${playerName}. Suggest a strong opening move in chess. Just response back with the move you want to play.`;
+    ? `You are ${playerName}. Given the chess moves so far: ${moves.join(', ')}, suggest the next chess move. First provide your move, then on a new line after "Reasoning:" explain why you're making this move and your strategic thinking. Your response will have two parts: 1) The move itself 2) Your reasoning.` 
+    : `You are ${playerName}. Suggest a strong opening move in chess. First provide your move, then on a new line after "Reasoning:" explain why you're making this move and your strategic thinking. Your response will have two parts: 1) The move itself 2) Your reasoning.`;
   
   try {
     console.log(`Sending prompt to Llama API: ${prompt}`);
@@ -36,9 +36,14 @@ async function getMoveFromLlama(moves: string[], playerName: string = 'Llama') {
     const move = extractMove(data.response);
     console.log(`Extracted move: ${move} from response: ${data.response}`);
     
+    // Extract reasoning from the response
+    const reasoning = extractReasoning(data.response);
+    console.log(`Extracted reasoning: ${reasoning}`);
+    
     return {
       move: move,
-      fullResponse: data.response
+      fullResponse: data.response,
+      reasoning: reasoning
     };
   } catch (error) {
     console.error("Error in getMoveFromLlama:", error);
@@ -67,6 +72,29 @@ function extractMove(response: string) {
   }
   
   return null;
+}
+
+// Function to extract reasoning from LLM response
+function extractReasoning(response: string) {
+  if (!response) return null;
+  
+  // Look for "Reasoning:" followed by text - compatible with older TS versions
+  const reasoningIndex = response.indexOf("Reasoning:");
+  if (reasoningIndex !== -1) {
+    return response.substring(reasoningIndex + "Reasoning:".length).trim();
+  }
+  
+  // If no "Reasoning:" marker is found, try to return everything after the move
+  const move = extractMove(response);
+  if (move) {
+    const afterMove = response.substring(response.indexOf(move) + move.length).trim();
+    if (afterMove) {
+      return afterMove;
+    }
+  }
+  
+  // If all else fails, return the whole response as reasoning
+  return response;
 }
 
 // Helper function to format SSE messages properly with careful error handling
@@ -108,6 +136,7 @@ export async function POST(_req: NextRequest) {
       players: ['Llama1', 'Llama2'],
       moves: [],
       responses: {},
+      reasonings: {},
       currentPlayerIndex: 0,
       moveCounter: 0
     });
@@ -168,6 +197,7 @@ export async function GET(_req: NextRequest) {
       let gameOver = false;
       const moves: string[] = []; // Track moves
       const responses: Record<number, string> = {}; // Track full responses
+      const reasonings: Record<number, string> = {}; // Track move reasonings
       
       // First make sure the SSE connection is working by sending a test message
       await sendEvent('connection-test', { message: 'SSE connection established' });
@@ -193,15 +223,22 @@ export async function GET(_req: NextRequest) {
         
         try {
           // Get move from current Llama player
-          const { move, fullResponse } = await getMoveFromLlama(moves, currentPlayer);
+          const { move, fullResponse, reasoning } = await getMoveFromLlama(moves, currentPlayer);
           
           console.log(`${currentPlayer} response:`, fullResponse);
           responses[moves.length] = fullResponse;
+          reasonings[moves.length] = reasoning || "No reasoning provided";
           
           // Send the full response first for display
           await sendEvent('response', { 
             player: currentPlayer, 
             response: fullResponse 
+          });
+          
+          // Send the reasoning separately
+          await sendEvent('reasoning', {
+            player: currentPlayer,
+            reasoning: reasoning || "No reasoning provided"
           });
           
           if (!move) {
@@ -237,6 +274,7 @@ export async function GET(_req: NextRequest) {
           await sendEvent('move', { 
             player: currentPlayer, 
             move,
+            reasoning: reasoning || "No reasoning provided",
             fen: getFen(), // Send current board state too
             moveNumber: moveCounter
           });
@@ -269,6 +307,7 @@ export async function GET(_req: NextRequest) {
         result, 
         moves, 
         responses,
+        reasonings,
         finalFen: getFen()
       });
       

@@ -8,7 +8,7 @@ import { Bricolage_Grotesque } from "next/font/google"
 
 const leagueSpartan = League_Spartan({
     subsets: ["latin"],
-    weight: ["700"], // Bold weight
+    weight: ["700"], 
     variable: "--font-league-spartan",
 })
   
