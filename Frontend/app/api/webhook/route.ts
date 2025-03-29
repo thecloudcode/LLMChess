@@ -163,8 +163,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(_: NextRequest) {
+export async function GET(req: NextRequest) {
   console.log(`Chess webhook called with GET method - establishing SSE connection`);
+  console.log(req);
   
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();

@@ -84,6 +84,7 @@ export async function waitForRenderComplete(gameId: string = 'default', moveNumb
   const POLL_INTERVAL_MS = 100; // Check every 100ms
   
   return new Promise((resolve, _reject) => {
+    console.log(_reject)
     const startTime = Date.now();
     
     const checkRenderStatus = () => {
