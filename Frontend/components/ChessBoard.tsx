@@ -186,7 +186,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   const [isGameRunning, setIsGameRunning] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const [connectionRetries, setConnectionRetries] = useState(0);
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 10;
 
   // Memoize the moveHistory state update function
   const addMoveToHistory = useCallback((move: string) => {
