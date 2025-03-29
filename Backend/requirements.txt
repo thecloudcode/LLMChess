@@ -1,9 +1,0 @@
-fastapi
-motor
-chess
-openai
-python-dotenv
-prettytable
-Pillow
-websockets
-uvicorn

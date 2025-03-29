@@ -565,7 +565,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         onClick={startGame}
         disabled={isGameRunning}
       >
-        {isGameRunning ? 'Game in Progress...' : 'START'}
+        {isGameRunning ? 'Starting...' : 'START'}
       </button>
     </div>
   );
