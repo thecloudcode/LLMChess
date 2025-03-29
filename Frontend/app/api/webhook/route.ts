@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
   
   try {
     const body = await req.json();
-    const { gameType = 'chess', waitForRender = false } = body;
+    const { waitForRender = false } = body;
     
     // Generate a unique game ID - in a real app, this would be more sophisticated
     const gameId = Date.now().toString();
@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET(_: NextRequest) {
   console.log(`Chess webhook called with GET method - establishing SSE connection`);
   
   const { readable, writable } = new TransformStream();

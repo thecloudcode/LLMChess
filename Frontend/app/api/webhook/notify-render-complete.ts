@@ -83,7 +83,7 @@ export async function waitForRenderComplete(gameId: string = 'default', moveNumb
   const TIMEOUT_MS = 10000; // 10 seconds timeout
   const POLL_INTERVAL_MS = 100; // Check every 100ms
   
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     const startTime = Date.now();
     
     const checkRenderStatus = () => {

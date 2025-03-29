@@ -200,6 +200,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         
         // Add to move history
         setMoveHistory(prev => [...prev, moveNotation]);
+        console.log(moveHistory)
         
         // Check if the FEN string is available
         if (latestEvent.data.fen && typeof latestEvent.data.fen === 'string') {
@@ -337,6 +338,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     } catch (error) {
       console.error('Error starting game:', error);
       setStatus(`Failed to start game: ${error instanceof Error ? error.message : String(error)}`);
+      console.log(status)
       setIsGameRunning(false);
     }
   };
