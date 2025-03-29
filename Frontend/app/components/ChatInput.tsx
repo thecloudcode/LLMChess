@@ -15,24 +15,35 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage }) => {
   const handleSendMessage = async () => {
     if (input.trim() === '') return;
 
-    const providerMatch = input.match(/^@(llama|deepseek)\s+(.+)/i);
+    // First, send the user message regardless of whether it has an @mention
+    onSendMessage({
+      content: input,
+      sender: 'user'
+    });
+
+    // Check for @mentions anywhere in the message, not just at the beginning
+    const providers = ['llama', 'deepseek'];
+    let foundProvider: AIProvider | null = null;
     
-    if (providerMatch) {
-      const provider = providerMatch[1].toLowerCase() as AIProvider;
-      const message = providerMatch[2];
+    for (const provider of providers) {
+      const mentionRegex = new RegExp(`@${provider}\\b`, 'i');
+      if (mentionRegex.test(input)) {
+        foundProvider = provider.toLowerCase() as AIProvider;
+        break;
+      }
+    }
 
-      onSendMessage({
-        content: message,
-        sender: 'user'
-      });
-
+    if (foundProvider) {
       try {
-        const response = await fetch(`/api/${provider}`, {
+        // Remove the @mention from the message to get the clean prompt
+        const cleanPrompt = input.replace(new RegExp(`@${foundProvider}\\b`, 'i'), '').trim();
+        
+        const response = await fetch(`/api/${foundProvider}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ prompt: message }),
+          body: JSON.stringify({ prompt: cleanPrompt }),
         });
 
         const data = await response.json();
@@ -40,22 +51,16 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage }) => {
         if (data.response) {
           onSendMessage({
             content: data.response,
-            sender: provider
+            sender: foundProvider
           });
         }
       } catch (error) {
         console.error('Error sending message:', error);
         onSendMessage({
           content: 'Sorry, there was an error processing your request.',
-          sender: provider
+          sender: foundProvider
         });
       }
-    } else {
-      // Regular message handling
-      onSendMessage({
-        content: input,
-        sender: 'user'
-      });
     }
 
     setInput('');
@@ -68,20 +73,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage }) => {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-        placeholder="Type a message (use @llama or @deepseek for AI chat)"
+        placeholder="Type a message (use @llama or @deepseek anywhere for AI chat)"
         className="flex-grow p-2 rounded-lg text-black focus:outline-none focus:ring-0 placeholder-gray-300"
       />
-      {/* <button
-        onClick={handleSendMessage}
-        className="bg-blue-500 text-white p-2 rounded-r-lg hover:bg-blue-600 transition-colors"
-      >
-        Send
-      </button> */}
 
-      <div onClick={handleSendMessage} className="flex items-center font-extrabold text-sm text-black px-3 gap-3 bg-[#EEF1F5]">
-          
-          <ArrowUp className="h-5 w-5 text-white bg-black rounded-4xl p-1 stroke-4 stroke-white" />
-        </div>
+      <div onClick={handleSendMessage} className="flex items-center font-extrabold text-sm text-black px-3 gap-3 bg-[#EEF1F5] cursor-pointer">
+        <ArrowUp className="h-5 w-5 text-white bg-black rounded-4xl p-1 stroke-4 stroke-white" />
+      </div>
     </div>
   );
 };

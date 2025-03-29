@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getFen, makeMove, resetBoard, isGameOver } from '@/lib/chess';
+import { setWaitingForRender, waitForRenderComplete } from './notify-render-complete';
 
 // Create a Map to store active games (in a real app, this would be in a database)
 // This is to ensure we don't lose state between SSE connections
@@ -122,10 +123,13 @@ function formatSseEvent(eventType: string, data: Record<string, unknown> | strin
   }
 }
 
-export async function POST(_req: NextRequest) {
-  console.log(`Chess webhook called with POST method ${_req}`);
+export async function POST(req: NextRequest) {
+  console.log(`Chess webhook called with POST method`);
   
   try {
+    const body = await req.json();
+    const { gameType = 'chess', waitForRender = false } = body;
+    
     // Generate a unique game ID - in a real app, this would be more sophisticated
     const gameId = Date.now().toString();
     
@@ -138,7 +142,8 @@ export async function POST(_req: NextRequest) {
       responses: {},
       reasonings: {},
       currentPlayerIndex: 0,
-      moveCounter: 0
+      moveCounter: 0,
+      waitForRender: waitForRender
     });
     
     // Return the game ID in headers so the client can use it later
@@ -159,7 +164,7 @@ export async function POST(_req: NextRequest) {
 }
 
 export async function GET(_req: NextRequest) {
-  console.log(`Chess webhook called with GET method - establishing SSE connection, ${_req}`);
+  console.log(`Chess webhook called with GET method - establishing SSE connection`);
   
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
@@ -189,6 +194,9 @@ export async function GET(_req: NextRequest) {
     try {
       console.log("Setting up new chess game");
       resetBoard(); // Start a new game
+      
+      // Default game ID for simplicity - in a real app, you'd get this from request
+      const gameId = 'default';
       
       // Set up two Llama players with different names
       const players = ['Llama1', 'Llama2'];
@@ -270,14 +278,23 @@ export async function GET(_req: NextRequest) {
           gameOver = !!isGameOver(); // Convert to boolean, whatever the return type is
           console.log(`Game over status: ${gameOver}`);
           
+          // Mark that we're waiting for a render and get the current FEN
+          setWaitingForRender(gameId);
+          const currentFen = getFen();
+          
           // Send the validated move
           await sendEvent('move', { 
             player: currentPlayer, 
             move,
             reasoning: reasoning || "No reasoning provided",
-            fen: getFen(), // Send current board state too
+            fen: currentFen, // Send current board state too
             moveNumber: moveCounter
           });
+          
+          // Wait for the UI to render this move before proceeding to the next move
+          console.log(`Waiting for move #${moveCounter} to render completely...`);
+          await waitForRenderComplete(gameId, moveCounter);
+          console.log(`Move #${moveCounter} rendered, proceeding to next move`);
           
           // Switch turns
           currentPlayerIndex = (currentPlayerIndex + 1) % 2;

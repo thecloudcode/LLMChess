@@ -20,6 +20,135 @@ const initialBoard = [
   ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'],
 ];
 
+// Parse FEN string to board array
+const parseFEN = (fen: string): string[][] => {
+  // FEN has multiple parts separated by spaces, we only need the first part
+  const boardSection = fen.split(' ')[0];
+  const rows = boardSection.split('/');
+  
+  const board: string[][] = [];
+  
+  for (const row of rows) {
+    const boardRow: string[] = [];
+    for (const char of row) {
+      if (isNaN(parseInt(char))) {
+        // If it's not a number, it's a piece
+        boardRow.push(char);
+      } else {
+        // If it's a number, add that many empty spaces
+        for (let i = 0; i < parseInt(char); i++) {
+          boardRow.push(' ');
+        }
+      }
+    }
+    board.push(boardRow);
+  }
+  
+  return board;
+};
+
+// Map algebraic notation to board coordinates (improved version)
+const mapAlgebraicToCoords = (move: string, currentBoard: string[][]): { from: [number, number], to: [number, number] } | null => {
+  try {
+    // Handle castling
+    if (move === "O-O") {
+      // Kingside castling (assuming white's turn for now)
+      return { from: [7, 4], to: [7, 6] }; // White king
+    }
+    if (move === "O-O-O") {
+      // Queenside castling (assuming white's turn for now)
+      return { from: [7, 4], to: [7, 2] }; // White king
+    }
+    
+    // Basic pawn move (e.g., "e4")
+    if (/^[a-h][1-8]$/.test(move)) {
+      const col = move.charCodeAt(0) - 97; // 'a' = 0, 'b' = 1, etc.
+      const row = 8 - parseInt(move[1]); // '8' = 0, '7' = 1, etc.
+      
+      // Find which pawn can move there
+      // We'll check both white and black pawns depending on the current position
+      const whitePawnRow = row + 1;
+      const blackPawnRow = row - 1;
+      
+      // Check if there's a white pawn one row below
+      if (whitePawnRow < 8 && whitePawnRow >= 0 && currentBoard[whitePawnRow][col] === 'P') {
+        return { from: [whitePawnRow, col], to: [row, col] };
+      }
+      
+      // Check if there's a black pawn one row above
+      if (blackPawnRow < 8 && blackPawnRow >= 0 && currentBoard[blackPawnRow][col] === 'p') {
+        return { from: [blackPawnRow, col], to: [row, col] };
+      }
+      
+      // Check for double pawn push (white)
+      if (row === 4 && currentBoard[6][col] === 'P' && currentBoard[5][col] === ' ') {
+        return { from: [6, col], to: [row, col] };
+      }
+      
+      // Check for double pawn push (black)
+      if (row === 3 && currentBoard[1][col] === 'p' && currentBoard[2][col] === ' ') {
+        return { from: [1, col], to: [row, col] };
+      }
+    }
+    
+    // Piece move (e.g., "Nf3")
+    if (/^[KQRBN][a-h][1-8]$/.test(move)) {
+      const piece = move[0];
+      const toCol = move.charCodeAt(1) - 97;
+      const toRow = 8 - parseInt(move[2]);
+      
+      // Find the piece that can move there
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (currentBoard[r][c] === piece.toUpperCase()) {
+            // Simplified check - in a real implementation, you would verify if the move is legal
+            return { from: [r, c], to: [toRow, toCol] };
+          }
+        }
+      }
+    }
+    
+    // Capture move (e.g., "Nxe5")
+    if (/^[KQRBN]x[a-h][1-8]$/.test(move)) {
+      const piece = move[0];
+      const toCol = move.charCodeAt(2) - 97;
+      const toRow = 8 - parseInt(move[3]);
+      
+      // Find the piece that can capture
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (currentBoard[r][c] === piece.toUpperCase()) {
+            // Simplified check - in a real implementation, you would verify if the capture is legal
+            return { from: [r, c], to: [toRow, toCol] };
+          }
+        }
+      }
+    }
+    
+    // Pawn capture (e.g., "exd5")
+    if (/^[a-h]x[a-h][1-8]$/.test(move)) {
+      const fromCol = move.charCodeAt(0) - 97;
+      const toCol = move.charCodeAt(2) - 97;
+      const toRow = 8 - parseInt(move[3]);
+      
+      // Check for white pawn
+      if (toRow > 0 && currentBoard[toRow + 1][fromCol] === 'P') {
+        return { from: [toRow + 1, fromCol], to: [toRow, toCol] };
+      }
+      
+      // Check for black pawn
+      if (toRow < 7 && currentBoard[toRow - 1][fromCol] === 'p') {
+        return { from: [toRow - 1, fromCol], to: [toRow, toCol] };
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error parsing algebraic notation:", error, move);
+    return null;
+  }
+};
+
 interface ChessEventData {
   [key: string]: unknown;
 }
@@ -49,22 +178,84 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   const [capturedByOpponent, setCapturedByOpponent] = useState<string[]>([]);
   const [playerScore, setPlayerScore] = useState("");
   const [opponentScore, setOpponentScore] = useState("");
+  const [moveHistory, setMoveHistory] = useState<string[]>([]);
 
   // New state for game management
   const [status, setStatus] = useState<string>('Ready to start');
-  console.log(status);
   const [isGameRunning, setIsGameRunning] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const [connectionRetries, setConnectionRetries] = useState(0);
   const MAX_RETRIES = 3;
 
-  // Use sharedEvents to prevent unused variable warning
+  // Process shared events to update the board
   useEffect(() => {
     if (sharedEvents.length > 0) {
       const latestEvent = sharedEvents[sharedEvents.length - 1];
-      console.log('Latest shared event:', latestEvent);
+      console.log('Processing latest shared event:', latestEvent);
+      
+      // Handle move events
+      if (latestEvent.type === 'move' && latestEvent.data.move) {
+        const moveNotation = latestEvent.data.move as string;
+        console.log(`Processing move: ${moveNotation}`);
+        
+        // Add to move history
+        setMoveHistory(prev => [...prev, moveNotation]);
+        
+        // Check if the FEN string is available
+        if (latestEvent.data.fen && typeof latestEvent.data.fen === 'string') {
+          console.log(`Using FEN to update board: ${latestEvent.data.fen}`);
+          const newBoardFromFen = parseFEN(latestEvent.data.fen as string);
+          setBoardState(newBoardFromFen);
+        } else {
+          // Fallback to algebraic notation
+          const coords = mapAlgebraicToCoords(moveNotation, boardState);
+          
+          if (coords) {
+            console.log(`Mapped move ${moveNotation} to coordinates:`, coords);
+            const [fromRow, fromCol] = coords.from;
+            const [toRow, toCol] = coords.to;
+            
+            // Check if a piece is being captured
+            const pieceBeingCaptured = boardState[toRow][toCol];
+            
+            // Update the board
+            const newBoard = movePiece(boardState, fromRow, fromCol, toRow, toCol);
+            setBoardState(newBoard);
+            
+            // Handle captures
+            if (pieceBeingCaptured !== ' ') {
+              if (pieceBeingCaptured === pieceBeingCaptured.toLowerCase()) {
+                setCapturedByPlayer(prev => [...prev, pieceBeingCaptured]);
+                setPlayerScore(prev => prev + getPieceValue(pieceBeingCaptured));
+              } else {
+                setCapturedByOpponent(prev => [...prev, pieceBeingCaptured]);
+                setOpponentScore(prev => prev + getPieceValue(pieceBeingCaptured));
+              }
+            }
+          } else {
+            console.warn(`Could not map move ${moveNotation} to board coordinates`);
+          }
+        }
+      }
+      
+      // Handle game-over event with final board state
+      if (latestEvent.type === 'game-over' && latestEvent.data.finalFen) {
+        console.log(`Setting final board from FEN: ${latestEvent.data.finalFen}`);
+        const finalBoard = parseFEN(latestEvent.data.finalFen as string);
+        setBoardState(finalBoard);
+      }
+      
+      // If the event is game-start, reset the board
+      if (latestEvent.type === 'game-start') {
+        setBoardState(initialBoard);
+        setCapturedByPlayer([]);
+        setCapturedByOpponent([]);
+        setPlayerScore("");
+        setOpponentScore("");
+        setMoveHistory([]);
+      }
     }
-  }, [sharedEvents]);
+  }, [sharedEvents, boardState]);
 
   const handleDrop = (e: React.DragEvent, toRow: number, toCol: number) => {
     e.preventDefault();
@@ -114,6 +305,14 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     onResetEvents(); // Reset shared events
     setIsGameRunning(true);
     setConnectionRetries(0);
+    
+    // Reset the board state
+    setBoardState(initialBoard);
+    setCapturedByPlayer([]);
+    setCapturedByOpponent([]);
+    setPlayerScore("");
+    setOpponentScore("");
+    setMoveHistory([]);
     
     try {
       const response = await fetch('/api/webhook', {
@@ -240,6 +439,11 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     registerHandler('thinking');
     registerHandler('move');
     registerHandler('game-over');
+    registerHandler('connection-test');
+    registerHandler('response');
+    registerHandler('reasoning');
+    registerHandler('error');
+    registerHandler('illegal-move');
     
     eventSource.addEventListener('message', (e: MessageEvent) => {
       console.log('Generic message event received:', e);
@@ -264,7 +468,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center py-4 px-6 h-full">
-      <div className="w-full max-w-[120vmin] flex justify-center items-center px-4 shadow-2xl">
+      <div className="w-full max-w-[120vmin] flex justify-between items-center px-4 shadow-2xl">
         <div className="text-white">
           <div className="text-lg font-bold">{playerScore}</div>
           <div className="flex">
@@ -275,7 +479,20 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
             ))}
           </div>
         </div>
+        
+        {/* Move history display */}
+        {/* <div className="text-white bg-[#2F3241] p-2 rounded max-h-32 overflow-y-auto">
+          <h3 className="text-sm font-bold mb-1">Move History</h3>
+          <div className="text-xs">
+            {moveHistory.map((move, index) => (
+              <span key={index} className="mr-2">
+                {index % 2 === 0 ? `${Math.floor(index/2) + 1}.` : ''} {move}
+              </span>
+            ))}
+          </div>
+        </div> */}
       </div>
+      
       <div className="grid grid-cols-8 grid-rows-8 w-full max-w-[84vmin] max-h-[84vmin] aspect-square shadow-2xl border-4 border-[#13141E]">
         {boardState.map((row, rowIndex) =>
           row.map((piece, colIndex) => {
@@ -301,6 +518,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
           })
         )}
       </div>
+      
       <div className="w-full max-w-[90vmin] flex justify-between items-center px-4">
         <div className="text-white">
           <div className="text-lg font-bold">{opponentScore}</div>
@@ -312,6 +530,11 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
             ))}
           </div>
         </div>
+        
+        {/* Status display */}
+        {/* <div className="text-white bg-[#2F3241] p-2 rounded">
+          <p className="text-sm">{status}</p>
+        </div> */}
       </div>
       
       <button 

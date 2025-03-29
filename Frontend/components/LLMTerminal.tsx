@@ -133,8 +133,8 @@ const LLMTerminal: React.FC<LLMTerminalProps> = ({ model, events }) => {
               case 'response':
                 const responseData = event.data as ResponseEventData;
                 return (
-                  <div key={index} className="flex flex-col">
-                    <div className="rounded-lg p-4 shadow-sm max-w-4xl self-start">
+                  <div key={index} className="flex flex-col text-gray-600">
+                    <div className="rounded-lg p-4 max-w-4xl self-start">
                       <div className="font-medium text-black mb-1">
                         {responseData.player || 'AI'} 
                       </div>
@@ -149,9 +149,9 @@ const LLMTerminal: React.FC<LLMTerminalProps> = ({ model, events }) => {
               case 'reasoning':
                 const reasoningData = event.data as ReasoningEventData;
                 return (
-                  <div key={index} className="flex flex-col">
-                    <div className="rounded-lg p-4 shadow-sm max-w-4xl self-start border-l-4 border-amber-400">
-                      <div className="font-medium text-amber-700 mb-1">Reasoning</div>
+                  <div key={index} className="flex flex-col text-gray-600 text-sm">
+                    <div className="rounded-lg p-4 max-w-4xl self-start">
+                      <div className="font-medium mb-1">Reasoning</div>
                       <TypedContent 
                         text={reasoningData.reasoning || 'No reasoning provided'} 
                         typingSpeed={10}
@@ -185,31 +185,31 @@ const LLMTerminal: React.FC<LLMTerminalProps> = ({ model, events }) => {
                   </div>
                 );
                 
-              // case 'game-over':
-              //   const gameOverData = event.data as GameOverEventData;
-              //   return (
-              //     <div key={index} className="flex flex-col text-gray-600">
-              //       <div className="rounded-lg p-4 max-w-4xl mx-auto">
-              //         <div className="font-medium text-xl mb-2 text-center">Game Over</div>
-              //         <div className="text-center mb-3">
-              //           Result: <span className="font-bold">{gameOverData.result || 'Unknown'}</span>
-              //         </div>
-              //         {gameOverData.moves && (
-              //           <div className="mt-3 p-3 rounded-md">
-              //             <div className="font-medium mb-2">Moves:</div>
-              //             <div className="grid grid-cols-2 gap-2 text-sm">
-              //               {gameOverData.moves.map((move, moveIdx) => (
-              //                 <div key={moveIdx} className="flex">
-              //                   <span className="mr-2 text-gray-400">{moveIdx + 1}.</span>
-              //                   <span><ReactMarkdown>{move}</ReactMarkdown></span>
-              //                 </div>
-              //               ))}
-              //             </div>
-              //           </div>
-              //         )}
-              //       </div>
-              //     </div>
-              //   );
+              case 'game-over':
+                const gameOverData = event.data as GameOverEventData;
+                return (
+                  <div key={index} className="flex flex-col text-gray-600">
+                    <div className="rounded-lg p-4 max-w-4xl mx-auto">
+                      <div className="font-medium text-xl mb-2 text-center">Game Over</div>
+                      <div className="text-center mb-3">
+                        Result: <span className="font-bold">{gameOverData.result || 'Unknown'}</span>
+                      </div>
+                      {gameOverData.moves && (
+                        <div className="mt-3 p-3 rounded-md">
+                          <div className="font-medium mb-2">Moves:</div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            {gameOverData.moves.map((move, moveIdx) => (
+                              <div key={moveIdx} className="flex">
+                                <span className="mr-2 text-gray-400">{moveIdx + 1}.</span>
+                                <span><ReactMarkdown>{move}</ReactMarkdown></span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
                 
               case 'error':
               case 'connection-error':
