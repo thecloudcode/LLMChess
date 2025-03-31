@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stockfish vs Stockfish Chess</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        #move-history {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        #start-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #stop-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+<h1>Stockfish vs Stockfish Chess</h1>
+
+<div id="game-container">
+    <div class="controls">
+        <button id="start-btn">Start Game</button>
+        <button id="stop-btn" disabled>Stop Game</button>
+    </div>
+
+    <div class="status">
+        <h2>Game Status</h2>
+        <p id="status-text">Connecting to server...</p>
+    </div>
+
+    <div>
+        <h2>Move History</h2>
+        <div id="move-history"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusText = document.getElementById('status-text');
+        const moveHistory = document.getElementById('move-history');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+
+        let socket;
+        let gameRunning = false;
+        let moveCount = 0;
+        let gameTimer = null;
+
+        // Connect to WebSocket server
+        function connect() {
+            socket = new WebSocket(`ws://${window.location.hostname}:9090/ws`);
+
+            socket.onopen = function() {
+                statusText.textContent = 'Connected to server. Press Start to begin the game.';
+                startBtn.disabled = false;
+            };
+
+            socket.onmessage = function(event) {
+                let data;
+                try {
+                    data = JSON.parse(event.data);
+                } catch (e) {
+                    // If not JSON, use the raw data
+                    data = { message: event.data };
+                }
+
+                // Update status
+                statusText.textContent = data.message || 'No message';
+
+                // Add to move history if moves exist
+                if (data.moves && data.moves.includes('Engine')) {
+                    moveCount++;
+                    const entry = document.createElement('div');
+                    entry.className = 'log-entry';
+                    entry.textContent = `Move ${moveCount}: ${data.moves}`;
+                    moveHistory.appendChild(entry);
+
+                    // Scroll to bottom
+                    moveHistory.scrollTop = moveHistory.scrollHeight;
+
+                    // If game is running, schedule the next move
+                    if (gameRunning) {
+                        // Wait 1 second before requesting the next move
+                        clearTimeout(gameTimer);
+                        gameTimer = setTimeout(requestNextMove, 1000);
+                    }
+                }
+            };
+
+            socket.onclose = function() {
+                statusText.textContent = 'Disconnected from server. Reconnecting...';
+                startBtn.disabled = true;
+                stopBtn.disabled = true;
+                gameRunning = false;
+
+                // Try to reconnect after 3 seconds
+                setTimeout(connect, 3000);
+            };
+
+            socket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                statusText.textContent = 'Error connecting to server.';
+            };
+        }
+
+        // Request next move from server
+        function requestNextMove() {
+            if (socket && socket.readyState === WebSocket.OPEN && gameRunning) {
+                socket.send('play');
+            }
+        }
+
+        // Start game button click handler
+        startBtn.addEventListener('click', function() {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                gameRunning = true;
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                statusText.textContent = 'Game started. Engines are playing...';
+
+                // Clear previous game if any
+                moveHistory.innerHTML = '';
+                moveCount = 0;
+
+                // Start the game loop
+                requestNextMove();
+            }
+        });
+
+        // Stop game button click handler
+        stopBtn.addEventListener('click', function() {
+            gameRunning = false;
+            clearTimeout(gameTimer);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            statusText.textContent = 'Game stopped. Press Start to begin a new game.';
+        });
+
+        // Initialize connection
+        connect();
+    });
+</script>
+</body>
+</html>
