@@ -24,10 +24,11 @@ export default function Navbar() {
 
   const navItems = [
     { name: "HOME", href: "/" },
-    { name: "STOCKFISH LLM", href: "/stockfish-llm" },
     { name: "PLAYGROUND", href: "/playground" },
-    { name: "DOCS", href: "/docs" },
-    { name: "PRICING", href: "/pricing" },
+    { name: "STOCKFISH LLM", href: "/stockfishllm" },
+
+    // { name: "DOCS", href: "/docs" },
+    // { name: "PRICING", href: "/pricing" },
   ]
 
   return (
