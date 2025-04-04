@@ -13,8 +13,7 @@ const leagueSpartan = League_Spartan({
 
 function PlaceholdersAndVanishInputDemo() {
     const placeholders = [
-      "Paste the Chess Moves",
-      "Ask a question",
+      "Paste the Chess Moves, and it will suggest the next best move with explanation",
     ];
    
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
