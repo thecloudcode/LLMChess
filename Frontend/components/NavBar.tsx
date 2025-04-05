@@ -24,8 +24,9 @@ export default function Navbar() {
 
   const navItems = [
     { name: "HOME", href: "/" },
-    { name: "PLAYGROUND", href: "/playground" },
     { name: "STOCKFISH LLM", href: "/stockfishllm" },
+
+    { name: "PLAYGROUND", href: "/playground" },
 
     // { name: "DOCS", href: "/docs" },
     // { name: "PRICING", href: "/pricing" },

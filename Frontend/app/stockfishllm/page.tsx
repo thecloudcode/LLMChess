@@ -4,6 +4,7 @@ import React, {useState} from 'react'
 import { League_Spartan } from "next/font/google"
 import Image from "next/image";
 import { PlaceholdersAndVanishInput } from '@/components/ui/stockfishinput';
+import { TextGenerateEffect } from '@/components/ui/text-generate';
 
 const leagueSpartan = League_Spartan({
     subsets: ["latin"],
@@ -11,18 +12,22 @@ const leagueSpartan = League_Spartan({
     variable: "--font-league-spartan",
 })
 
+const STOCKFISHLLMAPIURL = process.env.NEXT_PUBLIC_STOCKFISHLLMAPIURL
+
+
 function PlaceholdersAndVanishInputDemo() {
     const [input, setInput] = useState("");
     const [response, setResponse] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const STOCKFISHLLMAPIURL = "http://localhost:8080/api/chess";
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setInput(e.target.value);
     };
 
     const placeholders = [
-      "Paste the Chess Moves, and it will suggest the next best move with explanation",
+      "e2e4 e7e5",
+      "d2d4 d7d5 c2c4 e7e6",
+      "c2c4 e7e5 b1c3 g8f6 g2g3 d7d5"
     ];
    
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -52,7 +57,7 @@ function PlaceholdersAndVanishInputDemo() {
       
     };
     return (
-      <div className="flex flex-col justify-center  items-center px-4">
+      <div className="flex flex-col justify-center  items-center px-4 w-[60%]">
 
         <PlaceholdersAndVanishInput
           placeholders={placeholders}
@@ -62,9 +67,8 @@ function PlaceholdersAndVanishInputDemo() {
         {loading && <p className="mt-4 text-gray-600">Thinking... 🤔</p>}
 
         {response && (
-          <div className="mt-4 p-4 rounded-xl bg-gray-100 border border-gray-300 text-black shadow">
-            <p className="font-semibold">Engine says:</p>
-            <pre className="whitespace-pre-wrap break-words">{response}</pre>
+          <div className='mt-10 bg-white p-6'>
+            <TextGenerateEffect words={response}/>
           </div>
         )}
 
