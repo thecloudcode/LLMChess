@@ -15,6 +15,7 @@ import (
 	//"os/exec"
 	"strings"
 	//"time"
+	"Backend/api"
 	"github.com/joho/godotenv"
 )
 
@@ -44,7 +45,7 @@ func startGame() {
 	if err != nil {
 		log.Println("Warning: Error loading .env file:", err)
 	}
-	
+
 	if os.Getenv("STOCKFISH_PATH") == "" {
 		log.Fatal("STOCKFISH_PATH environment variable must be set")
 	}
@@ -88,5 +89,12 @@ func startServer() {
 }
 
 func main() {
-	startGame()
+	http.HandleFunc("/api/chess", api.StockfishLLMHandler)
+
+	log.Println("Chess server listening on port 8080...")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal("Server failed:", err)
+	}
+	//startGame()
 }
