@@ -3,7 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/joho/godotenv"
+	//"github.com/joho/godotenv"
 	"io"
 	"log"
 	"net/http"
@@ -21,20 +21,26 @@ type RequestBody struct {
 	Stream           bool                `json:"stream"`
 }
 
+func LoadEnv() {
+	if os.Getenv("ENV") != "production" {
+		//if err := godotenv.Load(); err != nil {
+		log.Println("Warning: No .env file found, using system environment variables")
+		//}
+	}
+}
+
 func extractContent(rawResponse string) string {
 	var response map[string]interface{}
 	err := json.Unmarshal([]byte(rawResponse), &response)
 	if err != nil {
-		log.Fatal("Error unmarshalling response", err)
+		log.Fatal("Error unmarshalling response:", err)
 	}
 
-	if choices, ok := response["choices"].([]interface{}); ok {
-		if len(choices) > 0 {
-			if choice, ok := choices[0].(map[string]interface{}); ok {
-				if message, ok := choice["message"].(map[string]interface{}); ok {
-					if content, ok := message["content"].(string); ok {
-						return content
-					}
+	if choices, ok := response["choices"].([]interface{}); ok && len(choices) > 0 {
+		if choice, ok := choices[0].(map[string]interface{}); ok {
+			if message, ok := choice["message"].(map[string]interface{}); ok {
+				if content, ok := message["content"].(string); ok {
+					return content
 				}
 			}
 		}
@@ -44,24 +50,21 @@ func extractContent(rawResponse string) string {
 }
 
 func GetResponse(prompt string) string {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	LoadEnv()
 
 	apiKey := os.Getenv("API_KEY")
 	if apiKey == "" {
-		log.Fatal("Error getting API key")
+		log.Fatal("Missing API_KEY environment variable")
 	}
 
 	model := os.Getenv("MODEL")
 	if model == "" {
-		log.Fatal("Error getting model")
+		log.Fatal("Missing MODEL environment variable")
 	}
 
 	requestURL := os.Getenv("REQUEST_URL")
 	if requestURL == "" {
-		log.Fatal("Error getting request url")
+		log.Fatal("Missing REQUEST_URL environment variable")
 	}
 
 	requestBody := RequestBody{
@@ -79,12 +82,12 @@ func GetResponse(prompt string) string {
 
 	reqBodyJson, err := json.Marshal(requestBody)
 	if err != nil {
-		log.Fatal("Error marshalling request body", err)
+		log.Fatal("Error marshalling request body:", err)
 	}
 
 	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(reqBodyJson))
 	if err != nil {
-		log.Fatal("Error creating request", err)
+		log.Fatal("Error creating request:", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -93,17 +96,14 @@ func GetResponse(prompt string) string {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal("Error executing request", err)
+		log.Fatal("Error executing request:", err)
 	}
-
 	defer resp.Body.Close()
+
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal("Error reading response body", err)
+		log.Fatal("Error reading response body:", err)
 	}
 
-	// Print the raw response for debugging
-	//fmt.Println("Raw Response: ", string(bodyBytes))
-	ress := extractContent(string(bodyBytes))
-	return ress
+	return extractContent(string(bodyBytes))
 }
