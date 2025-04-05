@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react'
+import React, {useState} from 'react'
 import { League_Spartan } from "next/font/google"
 import Image from "next/image";
 import { PlaceholdersAndVanishInput } from '@/components/ui/stockfishinput';
@@ -12,16 +12,44 @@ const leagueSpartan = League_Spartan({
 })
 
 function PlaceholdersAndVanishInputDemo() {
+    const [input, setInput] = useState("");
+    const [response, setResponse] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const STOCKFISHLLMAPIURL = "http://localhost:8080/api/chess";
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInput(e.target.value);
+    };
+
     const placeholders = [
       "Paste the Chess Moves, and it will suggest the next best move with explanation",
     ];
    
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      console.log(e.target.value);
-    };
-    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      console.log("submitted");
+      setLoading(true);
+      setResponse(null);
+
+      try{
+        const movesArray = input.trim().split(/\s+/);
+        console.log(STOCKFISHLLMAPIURL);
+
+        const res = await fetch(`${STOCKFISHLLMAPIURL}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({moves: movesArray}),
+        });
+
+        const data = await res.json();
+        setResponse(data.explanation || "No response from API.");
+      } catch (err) {
+        console.error("API error", err);
+        setResponse("Something went wrong.");
+      }
+      setLoading(false);
+      
     };
     return (
       <div className="flex flex-col justify-center  items-center px-4">
@@ -31,6 +59,15 @@ function PlaceholdersAndVanishInputDemo() {
           onChange={handleChange}
           onSubmit={onSubmit}
         />
+        {loading && <p className="mt-4 text-gray-600">Thinking... 🤔</p>}
+
+        {response && (
+          <div className="mt-4 p-4 rounded-xl bg-gray-100 border border-gray-300 text-black shadow">
+            <p className="font-semibold">Engine says:</p>
+            <pre className="whitespace-pre-wrap break-words">{response}</pre>
+          </div>
+        )}
+
       </div>
     );
   }
