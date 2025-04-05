@@ -3,15 +3,28 @@ package stockfish
 import (
 	"bufio"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
 
+func ensureExecutable(path string) {
+	err := os.Chmod(path, 0755) // rwxr-xr-x
+	if err != nil {
+		panic("Failed to make Stockfish executable: " + err.Error())
+	}
+}
+
 func Findbestmove(moves []string) string {
 
 	uciMoves := strings.Join(moves, " ")
+	stockfishPath := os.Getenv("STOCKFISH_PATH")
+	ensureExecutable(stockfishPath)
 
-	cmd := exec.Command("stockfish")
+	if stockfishPath == "" {
+		panic("STOCKFISH_PATH not set")
+	}
+	cmd := exec.Command(stockfishPath)
 	stdin, _ := cmd.StdinPipe()
 	stdout, _ := cmd.StdoutPipe()
 	cmd.Start()
