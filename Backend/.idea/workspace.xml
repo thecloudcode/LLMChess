@@ -4,41 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="35af7504-d3b0-4dc2-9867-e408a6414049" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/game/manager.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main2.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/app.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/styles.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/route.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/route.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/game.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/player.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/static/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/app/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/app/playground/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/app/playground/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/app/stockfishllm/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/app/stockfishllm/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/components/NavBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/components/NavBar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/components/Spotlight.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/components/Spotlight.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/components/ui/stockfishinput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/components/ui/stockfishinput.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/blackBishop.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/blackHorse.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/blackKing.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/blackPawn.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/blackQueen.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/blackRook.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/chessboard.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/public/chessboard.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/whiteBishop.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/whiteHorse.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/whiteKing.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/whitePawn.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/whiteQueen.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/public/whiteRook.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GamePlay.png" beforeDir="false" afterPath="$PROJECT_DIR$/../GamePlay.png" afterDir="false" />
-    </list>
+    <list default="true" id="35af7504-d3b0-4dc2-9867-e408a6414049" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
