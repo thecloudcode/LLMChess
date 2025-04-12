@@ -58,10 +58,10 @@ export default function Navbar() {
       
       <div className={`${bricolageGrotesque.className} flex items-center gap-2`}>
         <div className="flex gap-3 right-3">
-        <Link href="https://linkedin.com" aria-label="LinkedIn" className="text-slate-700 hover:text-slate-900">
+        <Link href="https://linkedin.com/in/badalprasadsingh/" aria-label="LinkedIn" className="text-slate-700 hover:text-slate-900">
           <Linkedin className="h-4 w-4" />
         </Link>
-        <Link href="https://github.com" aria-label="GitHub" className="text-slate-700 hover:text-slate-900 ">
+        <Link href="https://github.com/thecloudcode/LLMChess/" aria-label="GitHub" className="text-slate-700 hover:text-slate-900 ">
           <Github className="h-4 w-4" />
         </Link>
         </div>

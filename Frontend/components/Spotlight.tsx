@@ -3,6 +3,7 @@ import React from "react";
 import Image from "next/image";
 import { League_Spartan } from "next/font/google"
 import Link from "next/link";
+import Herotop from "@/components/herotop";
 
 
 const leagueSpartan = League_Spartan({
@@ -15,7 +16,9 @@ const leagueSpartan = League_Spartan({
 export function SpotlightNewDemo() {
 return (
     <div className="w-full min-h-screen flex flex-col items-center justify-center bg-white relative overflow-hidden px-4 py-16">
-    <div className="max-w-4xl w-full text-center z-10 py-20">
+        <Herotop/>
+
+    <div className="max-w-4xl w-full text-center z-10 pb-20 pt-10">
         <h1 className={`${leagueSpartan.className} text-7xl md:text-8xl font-extrabold bg-clip-text text-transparent bg-gradient-to-b from-neutral-900 to-neutral-600`}>
         LLMCHESS
         </h1>
@@ -117,7 +120,21 @@ return (
         <p className="mt-10 text-base md:text-lg text-neutral-700 mb-10 w-full text-center px-2">
         Integrating Stockfish with a Large Language Model to create an AI that understands, explains, and plays chess with human-like reasoning
         </p>
+        {/* <div className="relative flex justify-center items-center mt-20"> */}
 
+  {/* <div className="absolute w-[90%] h-[90%] bg-gradient-to-br from-cyan-400 via-indigo-500 to-fuchsia-500 blur-3xl opacity-50 rounded-xl z-0" />
+  
+  
+  <Image
+    src="/StockfishLLM.png"
+    alt="Chess"
+    width={1000}
+    height={1000}
+    className="w-full border-1 border-black relative z-10 rounded-xl"
+  />
+</div>
+
+         */}
     </div>
 );
 }
