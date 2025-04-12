@@ -25,16 +25,12 @@ export default function Navbar() {
   const navItems = [
     { name: "HOME", href: "/" },
     { name: "STOCKFISH LLM", href: "/stockfishllm" },
-
     { name: "PLAYGROUND", href: "/playground" },
-
-    // { name: "DOCS", href: "/docs" },
-    // { name: "PRICING", href: "/pricing" },
   ]
 
   return (
     <header className="w-full h-[80px] py-5 px-5 md:px-5 flex items-center justify-between bg-white">
-      {/* Logo */}
+      
       <Link href="/" className={`${leagueSpartan.className} flex items-center w-[140px]`}>
         <div className="font-bold text-2xl -space-y-1.5">
           <span className="block leading-none text-black">LLM</span>
@@ -42,7 +38,7 @@ export default function Navbar() {
         </div>
       </Link>
 
-      {/* Navigation */}
+      
       <nav className={`${bricolageGrotesque.className} hidden md:flex items-center gap-2`}>
         {navItems.map((item) => (
           <Link
@@ -59,9 +55,9 @@ export default function Navbar() {
         ))}
       </nav>
 
-      {/* Social Links and Login */}
-      <div className={`${bricolageGrotesque.className} flex items-center gap-12`}>
-        <div className="flex gap-6 right-3">
+      
+      <div className={`${bricolageGrotesque.className} flex items-center gap-2`}>
+        <div className="flex gap-3 right-3">
         <Link href="https://linkedin.com" aria-label="LinkedIn" className="text-slate-700 hover:text-slate-900">
           <Linkedin className="h-4 w-4" />
         </Link>

@@ -1,45 +1,18 @@
-"use client";
-import React, { useState } from "react";
-import ChessBoard from "@/components/ChessBoard";
-import LLMChat from "@/components/LLMSections";
-import ChatArea from "../components/ChatArea";
+import ChessGame from '../components/XChessGame';
+import type { NextPage } from 'next';
 
-interface ChessEvent {
-  type: string;
-  data: Record<string, unknown>;
-}
-
-export default function Home() {
-  const [sharedEvents, setSharedEvents] = useState<ChessEvent[]>([]);
-
-  const handleAddEvent = (event: ChessEvent) => {
-    setSharedEvents(prev => [...prev, event]);
-  };
-
-  const handleResetEvents = () => {
-    setSharedEvents([]);
-  };
-
+const Home: NextPage = () => {
   return (
-    <div className="flex justify-center items-center bg-white py-5 px-2 md:px-5"
-         style={{ height: 'calc(100vh - 80px)' }}> {/* Adjust 60px to your navbar height */}
-      <div className="flex-[1] min-w-0 h-full">
-        <LLMChat 
-          sharedEvents={sharedEvents} 
-          onAddEvent={handleAddEvent}
-          // onResetEvents={handleResetEvents}
-        />
-      </div>
-      <div className="flex-[1.2] min-w-0 h-full justify-center items-center">
-        <ChessBoard 
-          sharedEvents={sharedEvents} 
-          onAddEvent={handleAddEvent}
-          onResetEvents={handleResetEvents}
-        />
-      </div>
-      <div className="flex-[1] min-w-0 h-full">
-        <ChatArea />
-      </div>
+    <div className="min-h-[calc(100vh-80px)] bg-gray-50 w-full text-center z-10 flex flex-col justify-center items-center py-4">
+      <main className="flex-grow container mx-auto px-2 sm:px-4 md:px-6">
+        <ChessGame />
+      </main>
+      
+      <footer className="text-center text-sm text-gray-500 pb-1 mt-auto">
+        <p>LLMChess - Watch language models compete in chess</p>
+      </footer>
     </div>
   );
-}
+};
+
+export default Home;
