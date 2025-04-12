@@ -4,6 +4,7 @@ import Image from "next/image";
 import { League_Spartan } from "next/font/google"
 import Link from "next/link";
 import Herotop from "@/components/herotop";
+import { GlowingEffectDemo } from "./StocfishLLMDes";
 
 
 const leagueSpartan = League_Spartan({
@@ -28,7 +29,7 @@ return (
         <div className="flex flex-row justify-center items-center gap-2">
 
         <Link href={"./stockfishllm"}>
-    <button className="bg-slate-800 no-underline group cursor-pointer relative shadow-3xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6  text-white inline-block">
+    <button className="bg-slate-800 no-underline group cursor-pointer relative shadow-3xl shadow-zinc-900 rounded-full p-px text-xs leading-6  text-white inline-block">
   <span className="absolute inset-0 overflow-hidden rounded-full">
     <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
   </span>
@@ -57,7 +58,7 @@ return (
 </button>
 </Link>
         <Link href={"./playground"}>
-    <button className="bg-slate-800 no-underline group cursor-pointer relative shadow-3xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6  text-white inline-block">
+    <button className="bg-slate-800 no-underline group cursor-pointer relative shadow-3xl shadow-zinc-900 rounded-full p-px text-xs leading-6  text-white inline-block">
   <span className="absolute inset-0 overflow-hidden rounded-full">
     <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
   </span>
@@ -120,21 +121,11 @@ return (
         <p className="mt-10 text-base md:text-lg text-neutral-700 mb-10 w-full text-center px-2">
         Integrating Stockfish with a Large Language Model to create an AI that understands, explains, and plays chess with human-like reasoning
         </p>
-        {/* <div className="relative flex justify-center items-center mt-20"> */}
+        <div className="relative flex justify-center items-center mt-20 px-40"><GlowingEffectDemo/></div>
 
-  {/* <div className="absolute w-[90%] h-[90%] bg-gradient-to-br from-cyan-400 via-indigo-500 to-fuchsia-500 blur-3xl opacity-50 rounded-xl z-0" />
-  
-  
-  <Image
-    src="/StockfishLLM.png"
-    alt="Chess"
-    width={1000}
-    height={1000}
-    className="w-full border-1 border-black relative z-10 rounded-xl"
-  />
-</div>
 
-         */}
+        
+        
     </div>
 );
 }
