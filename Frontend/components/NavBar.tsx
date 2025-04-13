@@ -1,10 +1,9 @@
-"use client"
-
-import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { Github, Linkedin, ArrowRight } from "lucide-react"
 import { League_Spartan } from "next/font/google"
 import { Bricolage_Grotesque } from "next/font/google"
+import { auth, signOut, signIn } from "../auth"
+import NavLinks from "./NavBarLinks"
 
 const leagueSpartan = League_Spartan({
     subsets: ["latin"],
@@ -12,15 +11,15 @@ const leagueSpartan = League_Spartan({
     variable: "--font-league-spartan",
 })
   
-  // Configure Bricolage Grotesque for navigation
+
 const bricolageGrotesque = Bricolage_Grotesque({
     subsets: ["latin"],
     weight: ["400", "500"],
     variable: "--font-bricolage-grotesque",
 })
 
-export default function Navbar() {
-  const pathname = usePathname()
+const Navbar = async () => {
+  const session = await auth()
 
   const navItems = [
     { name: "HOME", href: "/" },
@@ -29,7 +28,7 @@ export default function Navbar() {
   ]
 
   return (
-    <header className="w-full h-[80px] py-5 px-5 md:px-5 flex items-center justify-between bg-white">
+    <header className="relative w-full h-[80px] py-5 px-5 md:px-5 flex items-center justify-between bg-white">
       
       <Link href="/" className={`${leagueSpartan.className} flex items-center w-[140px]`}>
         <div className="font-bold text-2xl -space-y-1.5">
@@ -39,21 +38,9 @@ export default function Navbar() {
       </Link>
 
       
-      <nav className={`${bricolageGrotesque.className} hidden md:flex items-center gap-2`}>
-        {navItems.map((item) => (
-          <Link
-            key={item.name}
-            href={item.href}
-            className={
-              pathname === item.href
-                ? "px-5 py-2 rounded-full text-sm font-medium transition-colors bg-slate-200 text-slate-800 border-1  border-slate-300"
-                : "px-5 py-2 rounded-full text-sm font-medium transition-colors hover:bg-slate-100 text-black border-1 border-slate-300"
-            }
-          >
-            {item.name}
-          </Link>
-        ))}
-      </nav>
+      <div className={`${bricolageGrotesque.className} absolute left-1/2 transform -translate-x-1/2`}>
+      <NavLinks items={navItems}/>
+      </div>
 
       
       <div className={`${bricolageGrotesque.className} flex items-center gap-2`}>
@@ -65,12 +52,38 @@ export default function Navbar() {
           <Github className="h-4 w-4" />
         </Link>
         </div>
-        <Link href="/login" className="flex items-center font-extrabold text-sm text-black px-3 gap-3">
-          LOGIN
+
+        {session && session?.user ? (
+          <>
+          <span className="font-extrabold text-sm text-black px-3">
+          {session?.user?.name}
+          </span>
+          <form action={async () => {
+            "use server";
+            await signOut({redirectTo: "/"})
+          }}>
+          <button type="submit" className="flex items-center font-extrabold text-sm text-black px-3 gap-3">
+          Logout
           <ArrowRight className="h-5 w-5 text-white bg-black rounded-4xl p-1 stroke-4 stroke-white" />
-        </Link>
+          </button>
+          </form>
+          </>
+        ) : (
+          <form action={ async() => {
+            "use server";
+            await signIn('google')
+          }}>
+          <button type="submit" className="flex items-center font-extrabold text-sm text-black px-3 gap-3">
+          Login
+            <ArrowRight className="h-5 w-5 text-white bg-black rounded-4xl p-1 stroke-4 stroke-white" />
+          </button>
+          </form>
+        )}
+        
+
       </div>
     </header>
   )
 }
 
+export default Navbar
