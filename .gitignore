@@ -1,6 +1,9 @@
 .env
 .env.*
 
+Backend/test.go
+
+
 CCTVAnomaly.zip
 CCTVAnomaly/
 

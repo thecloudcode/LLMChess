@@ -1,4 +1,4 @@
-package rate_limiter_token_bucket
+package rateLimiter
 
 import (
 	"encoding/json"
