@@ -10,4 +10,5 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/notnil/chess v1.10.0 // indirect
 	github.com/rs/cors v1.11.1 // indirect
+	golang.org/x/time v0.11.0 // indirect
 )
