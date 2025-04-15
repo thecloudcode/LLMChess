@@ -2,35 +2,18 @@ package redis
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-redis/redis/v8"
+	"os"
 )
 
-func main() {
-	fmt.Println("Go Redis Tutorial")
-	client := redis.NewClient(&redis.Options{
-		Addr:     "",
-		Password: "",
-		DB:       0,
-	})
+var Ctx = context.Background()
+var Client *redis.Client
 
-	ping, err := client.Ping(context.Background()).Result()
+func InitRedis() {
+	redisURl := os.Getenv("REDIS_URL")
+	opt, err := redis.ParseURL(redisURl)
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		panic("Invalid Redis URL: " + err.Error())
 	}
-
-	fmt.Println(ping)
-	err = client.Set(context.Background(), "name", "Elliot", 0).Err()
-	if err != nil {
-		fmt.Printf("Failed to set value in the redis instance")
-		return
-	}
-
-	val, err := client.Get(context.Background(), "name").Result()
-	if err != nil {
-		fmt.Printf("failed to get value from redis")
-		return
-	}
-	fmt.Printf("%s\n", val)
+	Client = redis.NewClient(opt)
 }
